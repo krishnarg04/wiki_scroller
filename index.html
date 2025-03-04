@@ -31,14 +31,23 @@
     </style>
 </head>
 <body>
-    <div class="article-container">
-        <img id="article-image" src="" alt="Article Image">
-        <div class="glass-div">
-            <h1 id="article-title">Article Title</h1>
-            <p id="article-text">Article text will be displayed here...</p>
+    <div class="tabs">
+        <button class="tab-button active" data-tab="discover">Discover</button>
+        <button class="tab-button" data-tab="for-you">For You</button>
+    </div>
+    <div id="discover-tab" class="tab-content active">
+        <div class="article-container">
+            <img id="article-image" src="" alt="Article Image">
+            <div class="glass-div">
+                <h1 id="article-title">Article Title</h1>
+                <p id="article-text">Article text will be displayed here...</p>
+            </div>
         </div>
     </div>
-    
+    <div id="for-you-tab" class="tab-content">
+        <!-- For You content will be loaded here -->
+        <div id="recommendations-container"></div>
+    </div>
     <script>
         // Register service worker
         if ('serviceWorker' in navigator) {
