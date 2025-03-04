@@ -1,0 +1,253 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #000000;
+    min-height: 100%;
+    height: 100%; 
+}
+
+body {
+    font-family: Arial, sans-serif;
+    color: #ffffff;
+    overflow-y: auto;
+    position: relative;
+}
+
+header {
+    position: relative;
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+}
+
+.article-container {
+    position: relative;
+    height: 100vh; /* Full viewport height */
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    scroll-snap-align: start;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    background-color: #000000; /* Ensure black background */
+}
+
+#article-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40vh; /* Reduced height to 40% of viewport */
+    object-fit: contain; /* Changed from cover to maintain image aspect ratio */
+    background-color: #000000; /* Background color for letterboxing */
+    z-index: 1;
+}
+
+.glass-div {
+    position: absolute;
+    top: 40vh; /* Start right after the image */
+    left: 0;
+    right: 0;
+    bottom: 0; /* Ensure it extends to bottom */
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 2;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    overflow-y: auto;
+    max-height: none; /* Remove max-height constraint */
+}
+
+#article-title {
+    font-size: 2.2rem; /* Slightly larger title */
+    margin-bottom: 15px;
+    color: #ffffff;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+#article-text {
+    font-size: 1.1rem; /* Slightly larger text */
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 15px;
+    user-select: text;
+    -webkit-user-select: text;
+    max-height: 35vh; /* Limit text height */
+    overflow-y: auto;
+}
+
+/* For mobile devices */
+@media (max-width: 768px) {
+    #article-image {
+        height: 40vh; /* Keep consistent height */
+        object-fit: contain;
+        background-color: #000000;
+    }
+    
+    .glass-div {
+        top: 40vh;
+        padding: 15px;
+    }
+    
+    #article-title {
+        font-size: 1.6rem;
+        margin-bottom: 10px;
+    }
+    
+    #article-text {
+        font-size: 1rem;
+        line-height: 1.4;
+        max-height: 30vh;
+    }
+}
+
+/* Scrollbar styling */
+.glass-div::-webkit-scrollbar {
+    width: 6px;
+}
+
+.glass-div::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.glass-div::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.article-title {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.article-text {
+    font-size: 1.2em;
+    line-height: 1.5;
+}
+
+.scroll-container {
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.recommendation {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: rgba(30, 30, 30, 0.8);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+}
+
+.main-scroll-container {
+    width: 100%;
+    height: 100vh;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    background-color: #000000;
+}
+
+.loading-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+.read-more {
+    display: inline-block;
+    color: #4a90e2;
+    margin-top: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: background-color 0.3s;
+}
+
+.read-more:hover, .read-more:active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Add these styles to your existing CSS */
+
+.swipe-reaction {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-size: 100px;
+    z-index: 1000;
+    pointer-events: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    opacity: 0;
+}
+
+.swipe-like {
+    color: rgba(255, 0, 89, 0.7);
+    text-shadow: 0 0 20px rgba(255, 0, 89, 0.3);
+}
+
+.swipe-dislike {
+    color: rgba(255, 0, 0, 0.7);
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+}
+
+.swipe-previous {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.swipe-next {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.heart-animation {
+    position: fixed;
+    font-size: 50px;
+    z-index: 1000;
+    pointer-events: none;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.8s ease;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transform-origin: center;
+}
