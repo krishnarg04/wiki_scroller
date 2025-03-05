@@ -42,6 +42,10 @@ let articleStartTime = null;
 let currentArticleId = null;
 let currentArticleData = null;
 
+// Add these variables to keep track of the visible articles
+let visibleArticles = [];
+const MAX_VISIBLE_ARTICLES = 5; // Maximum number of articles to keep in DOM
+
 function loadArticle() {
     // Remove existing empty container if it exists
     const existingContainer = document.querySelector('.article-container');
@@ -133,6 +137,9 @@ async function fetchRandomArticleData() {
         
         // Hide loading indicator
         hideLoadingIndicator(loadingIndicator);
+        
+        // Also recycle any off-screen articles
+        recycleArticleViews();
     } catch (error) {
         console.error('Error fetching Wikipedia article:', error);
         const errorArticle = createErrorArticleElement();
@@ -230,6 +237,115 @@ function createErrorArticleElement() {
     articleContainer.appendChild(glassDiv);
     
     return articleContainer;
+}
+
+// Replace the current addArticleWithTransition function with this version
+function addArticleWithTransition(articleElement) {
+    // Determine which tab is active
+    const activeTab = document.querySelector('.tab-content.active');
+    
+    // Get main container within the active tab or create if doesn't exist
+    let mainContainer = activeTab.querySelector('.main-scroll-container');
+    if (!mainContainer) {
+        mainContainer = document.createElement('div');
+        mainContainer.className = 'main-scroll-container';
+        activeTab.appendChild(mainContainer);
+        
+        // Add scroll event listener for recycling views
+        mainContainer.addEventListener('scroll', handleScrollForRecycling);
+    }
+    
+    // Add the new article
+    articleElement.style.transform = 'translateY(100%)';
+    articleElement.style.opacity = '0';
+    mainContainer.appendChild(articleElement);
+    
+    // Add to visible articles array
+    visibleArticles.push({
+        element: articleElement,
+        id: Math.random().toString(36).substr(2, 9) // Generate unique ID
+    });
+    
+    // Clean up old articles if we have too many
+    recycleArticleViews();
+    
+    // Trigger animation
+    setTimeout(() => {
+        articleElement.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+        articleElement.style.transform = 'translateY(0)';
+        articleElement.style.opacity = '1';
+    }, 10);
+}
+
+// Add the recycling function
+function recycleArticleViews() {
+    if (visibleArticles.length <= MAX_VISIBLE_ARTICLES) return;
+    
+    // Get the current scroll position
+    const activeTab = document.querySelector('.tab-content.active');
+    const mainContainer = activeTab?.querySelector('.main-scroll-container');
+    if (!mainContainer) return;
+    
+    // Sort articles by their position in the DOM
+    visibleArticles.sort((a, b) => {
+        const posA = a.element.getBoundingClientRect().top;
+        const posB = b.element.getBoundingClientRect().top;
+        return posA - posB;
+    });
+    
+    // Find which articles are off-screen and can be removed
+    const viewportHeight = window.innerHeight;
+    const articlesToRemove = [];
+    
+    // Keep a minimum number of articles before and after the visible area
+    const bufferCount = 1; // Keep 1 article before and after visible area
+    
+    // Find articles that are far off-screen (beyond our buffer)
+    for (let i = 0; i < visibleArticles.length - bufferCount; i++) {
+        const article = visibleArticles[i];
+        const rect = article.element.getBoundingClientRect();
+        
+        // If it's far above the viewport, mark for removal
+        if (rect.bottom < -viewportHeight) {
+            articlesToRemove.push(article);
+        }
+    }
+    
+    // Also check articles that are far below
+    for (let i = bufferCount + 1; i < visibleArticles.length; i++) {
+        const article = visibleArticles[i];
+        const rect = article.element.getBoundingClientRect();
+        
+        // If it's far below the viewport, mark for removal
+        if (rect.top > viewportHeight * 2) {
+            articlesToRemove.push(article);
+        }
+    }
+    
+    // Remove the off-screen articles
+    articlesToRemove.forEach(article => {
+        // Remove from DOM
+        if (article.element.parentNode) {
+            article.element.parentNode.removeChild(article.element);
+        }
+        
+        // Remove from our tracking array
+        const index = visibleArticles.findIndex(a => a.id === article.id);
+        if (index !== -1) {
+            visibleArticles.splice(index, 1);
+        }
+    });
+    
+    console.log(`Recycled ${articlesToRemove.length} articles. Current count: ${visibleArticles.length}`);
+}
+
+// Add a scroll handler for recycling views
+function handleScrollForRecycling() {
+    // Debounce for better performance
+    clearTimeout(window.recycleTimer);
+    window.recycleTimer = setTimeout(() => {
+        recycleArticleViews();
+    }, 100);
 }
 
 // Update addArticleWithTransition to handle the current tab context
@@ -743,9 +859,8 @@ function setupTabs() {
     });
 }
 
-// Update clearDiscoverTabContent to work with the tab-specific containers
+// Clear articles when switching tabs
 function clearDiscoverTabContent() {
-    // Make sure we clear the specific tab content, not just any main-scroll-container
     const discoverTab = document.getElementById('discover-tab');
     const mainContainer = discoverTab.querySelector('.main-scroll-container');
     
@@ -757,11 +872,20 @@ function clearDiscoverTabContent() {
         const newMainContainer = document.createElement('div');
         newMainContainer.className = 'main-scroll-container';
         discoverTab.appendChild(newMainContainer);
+        
+        // Clear visible articles tracking
+        visibleArticles = [];
+        
+        // Add scroll event listener
+        newMainContainer.addEventListener('scroll', handleScrollForRecycling);
     } else {
         // If no container exists, create one
         const newMainContainer = document.createElement('div');
         newMainContainer.className = 'main-scroll-container';
         discoverTab.appendChild(newMainContainer);
+        
+        // Add scroll event listener
+        newMainContainer.addEventListener('scroll', handleScrollForRecycling);
     }
 }
 

@@ -11,16 +11,13 @@
 html, body {
     margin: 0;
     padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* Prevent body scrolling */
     background-color: #000000;
-    min-height: 100%;
-    height: 100%; 
-}
-
-body {
-    font-family: Arial, sans-serif;
     color: #ffffff;
-    overflow-y: auto;
-    position: relative;
+    font-family: Arial, sans-serif;
+    position: fixed; /* Keep body fixed */
 }
 
 header {
@@ -34,14 +31,20 @@ header {
     position: relative;
     height: 100vh; /* Full viewport height */
     width: 100%;
-    overflow: hidden;
+    /* Change from 'overflow: hidden' to control overflow specifically */
+    overflow-x: hidden; /* Hide horizontal overflow */
+    overflow-y: visible; /* Allow vertical content to be visible */
     display: flex;
     flex-direction: column;
     scroll-snap-align: start;
     transition: transform 0.5s ease, opacity 0.5s ease;
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
     background-color: #000000; /* Ensure black background */
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    /* Add these properties to improve scrolling */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
 #article-image {
@@ -49,7 +52,8 @@ header {
     top: 0;
     left: 0;
     width: 100%;
-    height: 40vh; /* Reduced height to 40% of viewport */
+    height: 30vh; /* Reduced height to 40% of viewport */
+    max-height: 30vh; /* Reduced height to 40% of viewport */
     object-fit: contain; /* Changed from cover to maintain image aspect ratio */
     background-color: #000000; /* Background color for letterboxing */
     z-index: 1;
@@ -57,18 +61,28 @@ header {
 
 .glass-div {
     position: absolute;
-    top: 40vh; /* Start right after the image */
+    top: 35vh; /* Move up slightly */
     left: 0;
     right: 0;
-    bottom: 0; /* Ensure it extends to bottom */
     padding: 20px;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.7); 
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     z-index: 2;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
-    overflow-y: auto;
-    max-height: none; /* Remove max-height constraint */
+    overflow-y: auto; /* Ensure this handles scrolling */
+    height: 60vh; /* Use height to control size */
+    max-height: 60vh; /* Use max-height for consistency */
+    box-sizing: border-box;
+    margin-top: 0;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    /* Enable hardware acceleration */
+    transform: translateZ(0);
+    will-change: transform;
+    /* Add subtle border for better glass effect */
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 #article-title {
@@ -86,21 +100,24 @@ header {
     margin-bottom: 15px;
     user-select: text;
     -webkit-user-select: text;
-    max-height: 35vh; /* Limit text height */
-    overflow-y: auto;
+    overflow-y: visible; /* Let the glass-div handle scrolling */
+    max-height: none; /* Remove max height constraint */
 }
 
 /* For mobile devices */
 @media (max-width: 768px) {
     #article-image {
-        height: 40vh; /* Keep consistent height */
+        height: 30vh; /* Slightly smaller on mobile */
+        max-height: 30vh;
         object-fit: contain;
         background-color: #000000;
     }
     
     .glass-div {
-        top: 40vh;
+        top: 30vh; /* Match image height */
         padding: 15px;
+        height: 65vh; /* Allow more space on mobile */
+        max-height: 65vh;
     }
     
     #article-title {
@@ -111,7 +128,8 @@ header {
     #article-text {
         font-size: 1rem;
         line-height: 1.4;
-        max-height: 30vh;
+        /* Remove max-height to prevent truncation */
+        max-height: none;
     }
 }
 
@@ -155,10 +173,16 @@ header {
 
 .main-scroll-container {
     width: 100%;
-    height: 100vh;
-    overflow-y: auto;
-    scroll-snap-type: y mandatory;
+    height: 100%;
+    padding-bottom: env(safe-area-inset-bottom);
+    overflow-y: auto; /* Ensure vertical scrolling works */
+    scroll-snap-type: y proximity; /* Changed from mandatory for smoother experience */
     background-color: #000000;
+    position: relative;
+    padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+    -webkit-overflow-scrolling: touch;
 }
 
 .loading-indicator {
@@ -299,17 +323,31 @@ header {
 }
 
 .tab-content {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding-top: calc(50px + env(safe-area-inset-top)); /* Space for tabs */
+    overflow-y: auto; /* Change from hidden to auto to enable scrolling */
     display: none;
-    padding-top: 60px; /* Increase padding to account for fixed tabs */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    overscroll-behavior-y: contain; /* Prevent scroll chaining */
+    margin: 0;
+    box-sizing: border-box;
 }
 
 .tab-content.active {
     display: block;
+    z-index: 1;
 }
 
 /* Recommendations styling */
 #recommendations-container {
     padding: 10px;
+    padding-bottom: 50px; /* Add extra padding to the bottom */
+    overflow-y: visible; /* Let the container overflow naturally */
+    height: auto; /* Allow it to grow as needed */
 }
 
 .recommendation-card {
@@ -423,11 +461,24 @@ header {
 .load-more-container {
     height: auto !important;
     min-height: 150px;
+    margin-bottom: 50px; /* Add space at the bottom */
+    overflow: visible; /* Allow content to flow naturally */
 }
 
 .load-more-container .glass-div {
+    position: relative; /* Override absolute positioning */
+    top: auto;
+    height: auto;
+    max-height: none;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 30px;
+}
+
+/* Fix the overflow issue in the discover tab content */
+#discover-content {
+    overflow-y: auto !important; /* Force scrolling on the tab content */
+    height: 100%;
+    padding-bottom: 50px; /* Add space at the bottom for better scrolling experience */
 }
